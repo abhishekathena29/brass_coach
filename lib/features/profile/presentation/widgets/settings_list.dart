@@ -10,7 +10,7 @@ class SettingItem {
 }
 
 const List<SettingItem> kSettings = [
-  SettingItem('Instrument', 'Bb Trumpet'),
+  SettingItem('Instrument', 'Trombone'),
   SettingItem('Daily goal', '20 min'),
   SettingItem('Metronome', '96 bpm · 4/4'),
   SettingItem('Mic calibration', 'Calibrated'),
@@ -34,23 +34,27 @@ class SettingsList extends StatelessWidget {
                   : const Border(bottom: BorderSide(color: AppColors.border)),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  kSettings[i].label,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.foreground),
+                Expanded(
+                  child: Text(
+                    kSettings[i].label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.foreground),
+                  ),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      kSettings[i].value,
-                      style: const TextStyle(fontSize: 14, color: AppColors.mutedForeground),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.mutedForeground),
-                  ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    kSettings[i].value,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(fontSize: 14, color: AppColors.mutedForeground),
+                  ),
                 ),
+                const SizedBox(width: 8),
+                const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.mutedForeground),
               ],
             ),
           ),

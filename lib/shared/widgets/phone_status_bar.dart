@@ -5,17 +5,23 @@ import '../../core/theme/app_radii.dart';
 
 /// Port of the `StatusBar` sub-component inside `src/components/PhoneFrame.tsx`:
 /// a dark, rounded-bottom header with a mock system clock row, the user's
-/// avatar/name/instrument, and a notification button.
+/// avatar/account/instrument, and a notification button.
 class PhoneStatusBar extends StatelessWidget {
-  const PhoneStatusBar({super.key});
+  const PhoneStatusBar({super.key, required this.email});
+
+  final String? email;
 
   @override
   Widget build(BuildContext context) {
+    final account = email?.isNotEmpty == true ? email! : 'Player';
+
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
       decoration: const BoxDecoration(
         color: AppColors.ink,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppRadii.xl4)),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(AppRadii.xl4),
+        ),
       ),
       child: Column(
         children: [
@@ -53,49 +59,56 @@ class PhoneStatusBar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Container(
-                    height: 44,
-                    width: 44,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      color: AppColors.lilac,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Text(
-                      'JD',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.ink,
+              Expanded(
+                child: Row(
+                  children: [
+                    Container(
+                      height: 44,
+                      width: 44,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        color: AppColors.lilac,
+                        shape: BoxShape.circle,
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Jane Doe',
-                        style: TextStyle(
+                      child: Text(
+                        account[0].toUpperCase(),
+                        style: const TextStyle(
                           fontSize: 16,
-                          height: 1.2,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.primaryForeground,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.ink,
                         ),
                       ),
-                      Text(
-                        'Trumpet · Level 4',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Color(0x99FBFAF8),
-                        ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            account,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              height: 1.2,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryForeground,
+                            ),
+                          ),
+                          const Text(
+                            'Trombone · Level 4',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Color(0x99FBFAF8),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 12),
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -107,7 +120,10 @@ class PhoneStatusBar extends StatelessWidget {
                       color: AppColors.card,
                       shape: BoxShape.circle,
                     ),
-                    child: const Text('♪', style: TextStyle(fontSize: 18, color: AppColors.ink)),
+                    child: const Text(
+                      '♪',
+                      style: TextStyle(fontSize: 18, color: AppColors.ink),
+                    ),
                   ),
                   Positioned(
                     right: 6,

@@ -10,13 +10,16 @@ import '../widgets/settings_list.dart';
 
 /// Port of `Profile` in `src/routes/profile.tsx`.
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, required this.email, required this.onSignOut});
+
+  final String? email;
+  final Future<void> Function() onSignOut;
 
   @override
   Widget build(BuildContext context) {
     return ScreenScroll(
       children: [
-        const ScreenTitle(title: 'Profile', sub: 'Jane Doe · practising since Jan 2026'),
+        ScreenTitle(title: 'Profile', sub: email ?? 'Your account'),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Panel(
@@ -48,12 +51,19 @@ class ProfilePage extends StatelessWidget {
             children: [
               const Text(
                 'Practice reminder',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.foreground),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.foreground,
+                ),
               ),
               const SizedBox(height: 4),
               const Text(
                 'Weekdays at 6:30 PM, right after school hours.',
-                style: TextStyle(fontSize: 14, color: AppColors.mutedForeground),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.mutedForeground,
+                ),
               ),
               const SizedBox(height: 16),
               SizedBox(
@@ -69,13 +79,33 @@ class ProfilePage extends StatelessWidget {
                       child: Text(
                         'Edit schedule',
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primaryForeground),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primaryForeground,
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
             ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: TextButton(
+            onPressed: () async {
+              try {
+                await onSignOut();
+              } catch (error) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(error.toString())));
+                }
+              }
+            },
+            child: const Text('Sign out'),
           ),
         ),
       ],

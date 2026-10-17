@@ -96,7 +96,7 @@ Recommended order: **0 → 1 → 2 → 3 → 4 → 5 → 6 → 7**. Phases 1 and
 
 | Phase | Status |
 |---|---|
-| 0 — Foundations | Not started |
+| 0 — Foundations | In progress: welcome and Supabase email sign-in wired; remaining backend and repositories not started |
 | 1 — Reference Library | Not started |
 | 2 — Audio Capture | Not started |
 | 3 — Multi-Dimensional Analysis | Not started |

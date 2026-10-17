@@ -11,11 +11,13 @@ class PhoneShell extends StatelessWidget {
   const PhoneShell({
     super.key,
     required this.body,
+    required this.email,
     required this.currentIndex,
     required this.onTabTap,
   });
 
   final Widget body;
+  final String? email;
   final int currentIndex;
   final ValueChanged<int> onTabTap;
 
@@ -27,10 +29,8 @@ class PhoneShell extends StatelessWidget {
         children: [
           Column(
             children: [
-              const PhoneStatusBar(),
-              Expanded(
-                child: body,
-              ),
+              PhoneStatusBar(email: email),
+              Expanded(child: body),
             ],
           ),
           AppBottomNav(currentIndex: currentIndex, onTap: onTabTap),

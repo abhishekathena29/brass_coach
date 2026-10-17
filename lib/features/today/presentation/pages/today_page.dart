@@ -90,24 +90,27 @@ class TodayPage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Start a session',
-                          style: TextStyle(fontSize: 12, color: Color(0x99FBFAF8)),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Record with metronome',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primaryForeground,
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Start a session',
+                            style: TextStyle(fontSize: 12, color: Color(0x99FBFAF8)),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: 4),
+                          Text(
+                            'Record with metronome',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primaryForeground,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       height: 48,
                       width: 48,
@@ -131,12 +134,14 @@ class TodayPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Last session',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.foreground,
+                    const Expanded(
+                      child: Text(
+                        'Last session',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.foreground,
+                        ),
                       ),
                     ),
                     InkWell(

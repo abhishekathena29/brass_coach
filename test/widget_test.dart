@@ -1,30 +1,75 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:brass_coach/app.dart';
+import 'package:brass_coach/features/auth/domain/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+class _FakeAuthService extends AuthService {
+  bool _signedIn = false;
+  String? lastEmail;
+  String? lastPassword;
+
+  @override
+  bool get isSignedIn => _signedIn;
+
+  @override
+  String? get email => _signedIn ? lastEmail : null;
+
+  @override
+  Future<void> signIn(String email, String password) async {
+    lastEmail = email;
+    lastPassword = password;
+    _signedIn = true;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> signOut() async {
+    _signedIn = false;
+    notifyListeners();
+  }
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget( BrassCoachApp());
+  testWidgets('welcome leads to a validated email sign-in', (tester) async {
+    tester.view.physicalSize = const Size(375, 667);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    final auth = _FakeAuthService();
+    await tester.pumpWidget(BrassCoachApp(authService: auth));
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    expect(find.text('Practice with purpose.'), findsOneWidget);
+    await tester.tap(find.text('Sign in with email'));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter your email address.'), findsOneWidget);
+    expect(find.text('Enter your password.'), findsOneWidget);
+
+    await tester.enterText(
+      find.byType(EditableText).at(0),
+      'player@example.com',
+    );
+    await tester.enterText(find.byType(EditableText).at(1), 'secret-password');
+    await tester.ensureVisible(find.text('Sign in'));
+    await tester.tap(find.text('Sign in'));
+    await tester.pumpAndSettle();
+
+    expect(auth.lastEmail, 'player@example.com');
+    expect(auth.lastPassword, 'secret-password');
+    expect(find.text('Adaptive goal'), findsOneWidget);
+
+    await tester.tap(find.bySemanticsLabel('Profile'));
+    await tester.pumpAndSettle();
+    expect(find.text('player@example.com'), findsWidgets);
+    await tester.ensureVisible(find.text('Sign out'));
+    await tester.tap(find.text('Sign out'));
+    await tester.pumpAndSettle();
+    expect(find.text('Practice with purpose.'), findsOneWidget);
   });
 }
