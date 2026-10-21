@@ -1,23 +1,18 @@
-import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/widgets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
-import 'features/auth/data/supabase_auth_service.dart';
-import 'features/auth/domain/auth_service.dart';
+import 'features/auth/data/local_auth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  const url = String.fromEnvironment('SUPABASE_URL');
-  const publishableKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
-
-  final AuthService authService;
-  if (url.isNotEmpty && publishableKey.isNotEmpty) {
-    await Supabase.initialize(url: url, publishableKey: publishableKey);
-    authService = SupabaseAuthService(Supabase.instance.client);
-  } else {
-    authService = UnconfiguredAuthService();
-  }
-
-  runApp(BrassCoachApp(authService: authService));
+  final preferences = SharedPreferencesAsync();
+  final darkMode = await preferences.getBool('dark_mode') ?? false;
+  runApp(
+    BrassCoachApp(
+      authService: LocalAuthService(),
+      initialDarkMode: darkMode,
+      saveDarkMode: (value) => preferences.setBool('dark_mode', value),
+    ),
+  );
 }

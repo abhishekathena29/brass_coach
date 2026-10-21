@@ -17,7 +17,7 @@ class PhoneStatusBar extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.ink,
         borderRadius: BorderRadius.vertical(
           bottom: Radius.circular(AppRadii.xl4),
@@ -28,7 +28,7 @@ class PhoneStatusBar extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 '9:41',
                 style: TextStyle(
                   fontSize: 12,
@@ -44,7 +44,7 @@ class PhoneStatusBar extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppRadii.full),
                 ),
               ),
-              const Text(
+              Text(
                 '— ≋ ▮',
                 style: TextStyle(
                   fontSize: 12,
@@ -55,7 +55,7 @@ class PhoneStatusBar extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -66,20 +66,20 @@ class PhoneStatusBar extends StatelessWidget {
                       height: 44,
                       width: 44,
                       alignment: Alignment.center,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.lilac,
                         shape: BoxShape.circle,
                       ),
                       child: Text(
                         account[0].toUpperCase(),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppColors.ink,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,14 +88,14 @@ class PhoneStatusBar extends StatelessWidget {
                             account,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               height: 1.2,
                               fontWeight: FontWeight.w600,
                               color: AppColors.primaryForeground,
                             ),
                           ),
-                          const Text(
+                          Text(
                             'Trombone · Level 4',
                             style: TextStyle(
                               fontSize: 11,
@@ -108,7 +108,7 @@ class PhoneStatusBar extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -116,11 +116,11 @@ class PhoneStatusBar extends StatelessWidget {
                     height: 44,
                     width: 44,
                     alignment: Alignment.center,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.card,
                       shape: BoxShape.circle,
                     ),
-                    child: const Text(
+                    child: Text(
                       '♪',
                       style: TextStyle(fontSize: 18, color: AppColors.ink),
                     ),
@@ -131,7 +131,7 @@ class PhoneStatusBar extends StatelessWidget {
                     child: Container(
                       height: 8,
                       width: 8,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.lilacDeep,
                         shape: BoxShape.circle,
                       ),

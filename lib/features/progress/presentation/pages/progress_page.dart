@@ -32,13 +32,13 @@ class _ProgressPageState extends State<ProgressPage> {
   Widget build(BuildContext context) {
     return ScreenScroll(
       children: [
-        const ScreenTitle(title: 'Progress', sub: 'Last 30 days'),
+        ScreenTitle(title: 'Progress', sub: 'Last 30 days'),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Row(
             children: [
               Pill(label: 'Trends', active: _selectedTab == 0, onTap: () => setState(() => _selectedTab = 0)),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Pill(label: 'Sessions', active: _selectedTab == 1, onTap: () => setState(() => _selectedTab = 1)),
             ],
           ),
@@ -49,7 +49,7 @@ class _ProgressPageState extends State<ProgressPage> {
             tone: PanelTone.sage,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Row(
                   children: [
                     StatTile(label: 'Sessions logged', value: '24'),
@@ -76,15 +76,15 @@ class _ProgressPageState extends State<ProgressPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Pitch accuracy trend',
                   style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.foreground),
                 ),
-                const SizedBox(height: 16),
-                const TrendBarChart(),
-                const SizedBox(height: 12),
+                SizedBox(height: 16),
+                TrendBarChart(),
+                SizedBox(height: 12),
                 RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     style: TextStyle(fontSize: 14, color: AppColors.mutedForeground),
                     children: [
                       TextSpan(text: 'Upper-register pitch accuracy is up '),
@@ -106,11 +106,11 @@ class _ProgressPageState extends State<ProgressPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Coach highlights',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.foreground),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -124,7 +124,7 @@ class _ProgressPageState extends State<ProgressPage> {
                       ),
                       child: Text(
                         tag,
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.foreground),
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.foreground),
                       ),
                     ),
                 ],

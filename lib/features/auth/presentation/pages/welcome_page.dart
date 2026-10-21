@@ -34,8 +34,8 @@ class WelcomePage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 28),
                     child: Column(
                       children: [
-                        const SizedBox(height: 24),
-                        const Row(
+                        SizedBox(height: 24),
+                        Row(
                           children: [
                             Icon(
                               LucideIcons.music2,
@@ -73,12 +73,12 @@ class WelcomePage extends StatelessWidget {
                                       Container(
                                         height: 146,
                                         width: 146,
-                                        decoration: const BoxDecoration(
+                                        decoration: BoxDecoration(
                                           color: AppColors.lilac,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
-                                      const Icon(
+                                      Icon(
                                         LucideIcons.audioLines,
                                         size: 76,
                                         color: AppColors.ink,
@@ -87,10 +87,10 @@ class WelcomePage extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 36),
+                              SizedBox(height: 36),
                               Text('Practice with purpose.', style: titleStyle),
-                              const SizedBox(height: 12),
-                              const Text(
+                              SizedBox(height: 12),
+                              Text(
                                 'Get clear feedback on your playing and make every brass practice session count.',
                                 style: TextStyle(
                                   fontSize: 16,
@@ -115,8 +115,8 @@ class WelcomePage extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            child: const Text(
-                              'Sign in with email',
+                            child: Text(
+                              'Continue',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
@@ -124,7 +124,7 @@ class WelcomePage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 28),
+                        SizedBox(height: 28),
                       ],
                     ),
                   ),

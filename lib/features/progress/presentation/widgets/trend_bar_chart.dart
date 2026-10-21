@@ -18,13 +18,13 @@ class TrendBarChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           for (var i = 0; i < _bars.length; i++) ...[
-            if (i != 0) const SizedBox(width: 8),
+            if (i != 0) SizedBox(width: 8),
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 500),
+                    duration: Duration(milliseconds: 500),
                     curve: Curves.easeOut,
                     height: 128 * (_bars[i] / 100),
                     decoration: BoxDecoration(
@@ -37,8 +37,8 @@ class TrendBarChart extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text('W${i + 1}', style: const TextStyle(fontSize: 10, color: AppColors.mutedForeground)),
+                  SizedBox(height: 8),
+                  Text('W${i + 1}', style: TextStyle(fontSize: 10, color: AppColors.mutedForeground)),
                 ],
               ),
             ),

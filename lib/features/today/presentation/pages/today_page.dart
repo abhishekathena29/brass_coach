@@ -10,7 +10,6 @@ import '../../../../shared/widgets/panel.dart';
 import '../../../../shared/widgets/screen_scroll.dart';
 import '../../../../shared/widgets/screen_title.dart';
 import '../../../../shared/widgets/stat_tile.dart';
-import '../widgets/warmup_list.dart';
 
 /// Port of `Today` in `src/routes/index.tsx`.
 class TodayPage extends StatelessWidget {
@@ -20,7 +19,7 @@ class TodayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenScroll(
       children: [
-        const ScreenTitle(title: 'Today', sub: 'Tuesday · 12 min practised'),
+        ScreenTitle(title: 'Today', sub: 'Your practice plan'),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Panel(
@@ -34,10 +33,13 @@ class TodayPage extends StatelessWidget {
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            'Adaptive goal',
-                            style: TextStyle(fontSize: 14, color: AppColors.mutedForeground),
+                            'Today’s focus',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.mutedForeground,
+                            ),
                           ),
                           SizedBox(height: 4),
                           Text(
@@ -56,19 +58,30 @@ class TodayPage extends StatelessWidget {
                       height: 40,
                       width: 40,
                       alignment: Alignment.center,
-                      decoration: const BoxDecoration(color: AppColors.card, shape: BoxShape.circle),
-                      child: const Icon(LucideIcons.target, size: 20, color: AppColors.foreground),
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        LucideIcons.target,
+                        size: 20,
+                        color: AppColors.foreground,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                const Text(
+                SizedBox(height: 12),
+                Text(
                   'Upper-register intonation drifts sharp above G4. Long tones with a drone '
                   'before you run the passage.',
-                  style: TextStyle(fontSize: 14, height: 1.5, color: AppColors.mutedForeground),
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.5,
+                    color: AppColors.mutedForeground,
+                  ),
                 ),
-                const SizedBox(height: 16),
-                const MeterRow(label: 'Goal progress', value: 62, striped: true),
+                SizedBox(height: 16),
+                MeterRow(label: 'Goal progress', value: 62, striped: true),
               ],
             ),
           ),
@@ -90,17 +103,20 @@ class TodayPage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             'Start a session',
-                            style: TextStyle(fontSize: 12, color: Color(0x99FBFAF8)),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Color(0x99FBFAF8),
+                            ),
                           ),
                           SizedBox(height: 4),
                           Text(
-                            'Record with metronome',
+                            'Choose your practice',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -110,13 +126,20 @@ class TodayPage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Container(
                       height: 48,
                       width: 48,
                       alignment: Alignment.center,
-                      decoration: const BoxDecoration(color: AppColors.card, shape: BoxShape.circle),
-                      child: const Icon(LucideIcons.mic, size: 20, color: AppColors.ink),
+                      decoration: BoxDecoration(
+                        color: AppColors.card,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        LucideIcons.mic,
+                        size: 20,
+                        color: AppColors.ink,
+                      ),
                     ),
                   ],
                 ),
@@ -134,7 +157,7 @@ class TodayPage extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Last session',
                         style: TextStyle(
@@ -146,22 +169,29 @@ class TodayPage extends StatelessWidget {
                     ),
                     InkWell(
                       onTap: () => context.go('/progress'),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             'Details',
-                            style: TextStyle(fontSize: 14, color: AppColors.mutedForeground),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.mutedForeground,
+                            ),
                           ),
                           SizedBox(width: 4),
-                          Icon(LucideIcons.arrowUpRight, size: 16, color: AppColors.mutedForeground),
+                          Icon(
+                            LucideIcons.arrowUpRight,
+                            size: 16,
+                            color: AppColors.mutedForeground,
+                          ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                const Row(
+                SizedBox(height: 12),
+                Row(
                   children: [
                     StatTile(label: 'Pitch', value: '88%'),
                     SizedBox(width: 8),
@@ -170,25 +200,32 @@ class TodayPage extends StatelessWidget {
                     StatTile(label: 'Tone', value: '74%'),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12),
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.card.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(AppRadii.xl2),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Coach note',
-                        style: TextStyle(fontSize: 12, color: AppColors.mutedForeground),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.mutedForeground,
+                        ),
                       ),
                       SizedBox(height: 4),
                       Text(
-                        '"Attacks land ~40 ms late after each rest. Breathe one beat earlier '
+                        '"Your attacks come after the beat following each rest. Breathe one beat earlier '
                         'and place the note on the click."',
-                        style: TextStyle(fontSize: 14, height: 1.5, color: AppColors.foreground),
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.5,
+                          color: AppColors.foreground,
+                        ),
                       ),
                     ],
                   ),
@@ -200,17 +237,18 @@ class TodayPage extends StatelessWidget {
         Panel(
           tone: PanelTone.plain,
           bordered: true,
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          child: const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Warm-ups queued',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: AppColors.foreground),
+          child: Material(
+            color: Colors.transparent,
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text('Choose a warm-up'),
+              subtitle: Text('Browse suggested exercises or search for one'),
+              trailing: Icon(
+                LucideIcons.arrowRight,
+                color: AppColors.foreground,
               ),
-              SizedBox(height: 12),
-              WarmupList(),
-            ],
+              onTap: () => context.go('/practice/warm-up'),
+            ),
           ),
         ),
       ],

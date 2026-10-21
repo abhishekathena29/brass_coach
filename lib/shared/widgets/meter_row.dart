@@ -39,7 +39,7 @@ class MeterRow extends StatelessWidget {
           builder: (context, constraints) {
             final pct = value.clamp(22, 100) / 100;
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 400),
+              duration: Duration(milliseconds: 400),
               curve: Curves.easeOut,
               width: constraints.maxWidth * pct,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -54,18 +54,18 @@ class MeterRow extends StatelessWidget {
                         child: Text(
                           label,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: AppColors.foreground,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12),
                       Text(
                         '$value%',
                         softWrap: false,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.foreground,

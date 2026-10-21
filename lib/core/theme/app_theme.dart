@@ -8,13 +8,14 @@ import 'app_colors.dart';
 class AppTheme {
   AppTheme._();
 
-  static ThemeData get light {
+  static ThemeData get current {
     final base = ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
+      brightness: AppColors.isDark ? Brightness.dark : Brightness.light,
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: GoogleFonts.quicksand().fontFamily,
-      colorScheme: const ColorScheme.light(
+      colorScheme: ColorScheme(
+        brightness: AppColors.isDark ? Brightness.dark : Brightness.light,
         surface: AppColors.background,
         onSurface: AppColors.foreground,
         primary: AppColors.primary,
@@ -35,7 +36,7 @@ class AppTheme {
     return base.copyWith(
       textTheme: textTheme,
       splashFactory: InkRipple.splashFactory,
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: AppColors.border,
         thickness: 1,
         space: 1,
@@ -48,10 +49,10 @@ class AppTheme {
 /// (`ScreenTitle` = 600/semibold, panel headings = 600/semibold too).
 extension AppTextStyles on TextTheme {
   TextStyle get screenTitle => GoogleFonts.quicksand(
-        fontSize: 32,
-        height: 1.15,
-        fontWeight: FontWeight.w600,
-        color: AppColors.foreground,
-        letterSpacing: -0.5,
-      );
+    fontSize: 32,
+    height: 1.15,
+    fontWeight: FontWeight.w600,
+    color: AppColors.foreground,
+    letterSpacing: -0.5,
+  );
 }

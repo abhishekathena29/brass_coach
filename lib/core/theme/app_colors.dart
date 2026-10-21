@@ -1,45 +1,57 @@
 import 'package:flutter/material.dart';
 
-/// Design tokens ported 1:1 from `src/styles.css` (oklch → sRGB hex).
-/// Keep this file as the single source of truth for color.
+/// Shared colors for light and dark appearance.
 class AppColors {
   AppColors._();
 
-  static const background = Color(0xFFF7F6F2);
-  static const foreground = Color(0xFF191A1F);
+  static bool isDark = false;
 
-  static const card = Color(0xFFFFFFFF);
-  static const cardForeground = Color(0xFF191A1F);
-
-  static const primary = Color(0xFF191A1E);
-  static const primaryForeground = Color(0xFFFBFAF8);
-
-  static const secondary = Color(0xFFCBD3F3);
-  static const secondaryForeground = Color(0xFF1C1F29);
-
-  static const muted = Color(0xFFEEEDE8);
-  static const mutedForeground = Color(0xFF696B74);
-
-  static const accent = Color(0xFFD3E5C3);
-  static const accentForeground = Color(0xFF1F2717);
-
-  static const destructive = Color(0xFFDB4241);
-  static const destructiveForeground = Color(0xFFFBFAF8);
-
-  static const border = Color(0xFFDCDEE3);
-  static const ring = Color(0xFF99A2CB);
-
-  // Brand palette
-  static const lilac = Color(0xFFC6CFF6);
-  static const lilacSoft = Color(0xFFE4E9FD);
-  static const lilacDeep = Color(0xFF9199D6);
-
-  static const sage = Color(0xFFD5E5BE);
-  static const sageSoft = Color(0xFFECF4E0);
-  static const sageDeep = Color(0xFF84A469);
-
-  static const butter = Color(0xFFF6E8B3);
-  static const clay = Color(0xFFF0C2AE);
-  static const ink = Color(0xFF131417);
-  static const surface = Color(0xFFFBFAF7);
+  static Color get background =>
+      isDark ? const Color(0xFF302C2B) : const Color(0xFFDECEBE);
+  static Color get foreground =>
+      isDark ? const Color(0xFFDECEBE) : const Color(0xFF302C2B);
+  static Color get card =>
+      isDark ? const Color(0xFF403A37) : const Color(0xFFE8DDD2);
+  static Color get cardForeground => foreground;
+  static Color get primary => ink;
+  static Color get primaryForeground =>
+      isDark ? const Color(0xFF302C2B) : const Color(0xFFDECEBE);
+  static Color get secondary =>
+      isDark ? const Color(0xFF9B616D) : const Color(0xFFC8A9AA);
+  static Color get secondaryForeground =>
+      isDark ? const Color(0xFFDECEBE) : const Color(0xFF302C2B);
+  static Color get muted =>
+      isDark ? const Color(0xFF443D3A) : const Color(0xFFD4C4B8);
+  static Color get mutedForeground =>
+      isDark ? const Color(0xFFC7B8AC) : const Color(0xFF655651);
+  static Color get accent => sage;
+  static Color get accentForeground =>
+      isDark ? const Color(0xFF302C2B) : const Color(0xFFDECEBE);
+  static Color get destructive =>
+      isDark ? const Color(0xFFC78D97) : const Color(0xFF4E1424);
+  static Color get destructiveForeground =>
+      isDark ? const Color(0xFF302C2B) : const Color(0xFFDECEBE);
+  static Color get border =>
+      isDark ? const Color(0xFF625752) : const Color(0xFFC4B3A7);
+  static Color get ring => isDark ? const Color(0xFFC8A9AA) : sage;
+  static Color get lilac =>
+      isDark ? const Color(0xFFC8A9AA) : const Color(0xFF9B616D);
+  static Color get lilacSoft =>
+      isDark ? const Color(0xFF4A363A) : const Color(0xFFC8A9AA);
+  static Color get lilacDeep =>
+      isDark ? const Color(0xFFDECEBE) : const Color(0xFF4E1424);
+  static Color get sage =>
+      isDark ? const Color(0xFF8A9A86) : const Color(0xFF5F6B5E);
+  static Color get sageSoft =>
+      isDark ? const Color(0xFF394139) : const Color(0xFFB8C0B2);
+  static Color get sageDeep =>
+      isDark ? const Color(0xFFBDCEB9) : const Color(0xFF435044);
+  static Color get butter =>
+      isDark ? const Color(0xFFC8A9AA) : const Color(0xFFC8A9AA);
+  static Color get clay =>
+      isDark ? const Color(0xFFBA857A) : const Color(0xFF9B616D);
+  static Color get ink =>
+      isDark ? const Color(0xFF9B616D) : const Color(0xFF4E1424);
+  static Color get surface =>
+      isDark ? const Color(0xFF302C2B) : const Color(0xFFF0E8DF);
 }

@@ -28,10 +28,10 @@ class ScreenTitle extends StatelessWidget {
             ),
           ),
           if (sub != null) ...[
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               sub!,
-              style: const TextStyle(fontSize: 14, color: AppColors.mutedForeground),
+              style: TextStyle(fontSize: 14, color: AppColors.mutedForeground),
             ),
           ],
         ],
