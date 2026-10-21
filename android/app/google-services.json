@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1045323482923",
+    "project_id": "brass-coach",
+    "storage_bucket": "brass-coach.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045323482923:android:37e5ea1e9649becae8a76e",
+        "android_client_info": {
+          "package_name": "com.example.brass_coach"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJwKLzuHuiKKff3O6N3f18Yt9sEy-bt8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
