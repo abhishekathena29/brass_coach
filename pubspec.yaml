@@ -39,7 +39,6 @@ dependencies:
   lucide_icons_flutter: ^4.0.0
   file_picker: ^13.1.0
   just_audio: ^0.10.6
-  shared_preferences: ^2.5.6
   khuur_pitch: ^0.1.0
 
   firebase_core:

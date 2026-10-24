@@ -11,11 +11,13 @@ import '../../../../shared/widgets/panel.dart';
 import '../../../../shared/widgets/screen_scroll.dart';
 import '../../../../shared/widgets/screen_title.dart';
 import '../../../library/domain/library_tracks.dart';
+import '../../data/practice_store.dart';
 
 class MainPracticePage extends StatefulWidget {
-  const MainPracticePage({super.key, this.initialSong});
+  const MainPracticePage({super.key, this.initialSong, required this.store});
 
   final String? initialSong;
+  final PracticeStore store;
 
   @override
   State<MainPracticePage> createState() => _MainPracticePageState();
@@ -23,9 +25,11 @@ class MainPracticePage extends StatefulWidget {
 
 class _MainPracticePageState extends State<MainPracticePage> {
   late LibraryTrack _song;
+  bool _songSelected = false;
   String _focus = 'Practice with music';
   int _speedPercent = 100;
   Timer? _metronome;
+  Timer? _saveDebounce;
   int _beat = 0;
   final _customTitle = TextEditingController();
   final _customBpm = TextEditingController();
@@ -36,11 +40,22 @@ class _MainPracticePageState extends State<MainPracticePage> {
   String? _loadedAudioName;
   String? _audioError;
   bool _loadingAudio = false;
+  bool _savingSession = false;
 
   bool get _isCustom =>
       _customTitle.text.trim().isNotEmpty || _loadedAudioName != null;
+  String get _pieceName {
+    final title = _customTitle.text.trim();
+    if (title.isNotEmpty) return title;
+    if (_loadedAudioName != null) return _loadedAudioName!;
+    if (_songSelected) return _song.name;
+    return _focus == 'Practice with music'
+        ? 'Music practice'
+        : '$_focus practice';
+  }
+
   bool get _hasTempo {
-    if (!_isCustom) return true;
+    if (!_isCustom) return _songSelected;
     final bpm = int.tryParse(_customBpm.text);
     return bpm != null && bpm >= 40 && bpm <= 240;
   }
@@ -52,11 +67,60 @@ class _MainPracticePageState extends State<MainPracticePage> {
   @override
   void initState() {
     super.initState();
+    final saved = widget.store.data;
     _song = libraryTracks.firstWhere(
-      (track) => track.name == widget.initialSong,
+      (track) => track.name == (widget.initialSong ?? saved.song),
       orElse: () => libraryTracks.first,
     );
+    _songSelected = libraryTracks.any(
+      (track) => track.name == (widget.initialSong ?? saved.song),
+    );
+    _focus = widget.initialSong == null ? saved.focus : 'Practice with music';
+    _speedPercent = saved.speedPercent.clamp(50, 150);
+    if (widget.initialSong == null) {
+      _customTitle.text = saved.customTitle;
+      _customBpm.text = saved.customBpm;
+    }
     _clickReady = _prepareClick();
+  }
+
+  void _saveSettings() {
+    widget.store
+        .save({
+          'song': _songSelected ? _song.name : '',
+          'customTitle': _customTitle.text.trim(),
+          'customBpm': _customBpm.text.trim(),
+          'focus': _focus,
+          'speedPercent': _speedPercent,
+        })
+        .catchError((Object _) {});
+  }
+
+  void _saveTextSoon() {
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 450), _saveSettings);
+  }
+
+  Future<void> _logSession() async {
+    setState(() => _savingSession = true);
+    try {
+      await widget.store.logSession(_pieceName, _focus);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Practice session saved')));
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save this session. Try again.'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _savingSession = false);
+    }
   }
 
   Future<void> _prepareClick() async {
@@ -73,7 +137,7 @@ class _MainPracticePageState extends State<MainPracticePage> {
     if (!_clickAvailable) return;
     try {
       await _clickPlayer.seek(Duration.zero);
-      _clickPlayer.play();
+      unawaited(_clickPlayer.play().catchError((Object _) {}));
     } catch (_) {
       // The visual beat still runs if this device cannot play the click.
     }
@@ -82,6 +146,9 @@ class _MainPracticePageState extends State<MainPracticePage> {
   @override
   void dispose() {
     _metronome?.cancel();
+    final hasUnsavedText = _saveDebounce?.isActive ?? false;
+    _saveDebounce?.cancel();
+    if (hasUnsavedText) _saveSettings();
     _customTitle.dispose();
     _customBpm.dispose();
     _player.dispose();
@@ -111,6 +178,7 @@ class _MainPracticePageState extends State<MainPracticePage> {
         _customBpm.clear();
       });
       _updateTempo();
+      _saveSettings();
     } catch (_) {
       if (mounted) {
         setState(
@@ -132,7 +200,15 @@ class _MainPracticePageState extends State<MainPracticePage> {
         if (_player.processingState == ProcessingState.completed) {
           await _player.seek(Duration.zero);
         }
-        _player.play();
+        unawaited(
+          _player.play().catchError((Object _) {
+            if (mounted) {
+              setState(
+                () => _audioError = 'Audio playback stopped unexpectedly.',
+              );
+            }
+          }),
+        );
         if (_hasTempo) _startMetronome();
       }
     } catch (_) {
@@ -172,7 +248,15 @@ class _MainPracticePageState extends State<MainPracticePage> {
         _stopMetronome();
       }
     }
-    if (_loadedAudioName != null) _player.setSpeed(_speedPercent / 100);
+    if (_loadedAudioName != null) {
+      unawaited(
+        _player.setSpeed(_speedPercent / 100).catchError((Object _) {
+          if (mounted) {
+            setState(() => _audioError = 'Could not change audio speed.');
+          }
+        }),
+      );
+    }
   }
 
   @override
@@ -237,7 +321,7 @@ class _MainPracticePageState extends State<MainPracticePage> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<LibraryTrack>(
-                initialValue: _song,
+                initialValue: _songSelected ? _song : null,
                 isExpanded: true,
                 decoration: const InputDecoration(
                   labelText: 'Choose from Library',
@@ -253,6 +337,7 @@ class _MainPracticePageState extends State<MainPracticePage> {
                   if (track == null) return;
                   setState(() {
                     _song = track;
+                    _songSelected = true;
                     _customTitle.clear();
                     _customBpm.clear();
                     _speedPercent = 100;
@@ -260,12 +345,16 @@ class _MainPracticePageState extends State<MainPracticePage> {
                   });
                   _player.stop();
                   _updateTempo();
+                  _saveSettings();
                 },
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _customTitle,
-                onChanged: (_) => _updateTempo(),
+                onChanged: (_) {
+                  _updateTempo();
+                  _saveTextSoon();
+                },
                 decoration: const InputDecoration(
                   labelText: 'Or enter your own piece',
                   hintText: 'Song title',
@@ -276,7 +365,10 @@ class _MainPracticePageState extends State<MainPracticePage> {
                 TextField(
                   controller: _customBpm,
                   keyboardType: TextInputType.number,
-                  onChanged: (_) => _updateTempo(),
+                  onChanged: (_) {
+                    _updateTempo();
+                    _saveTextSoon();
+                  },
                   decoration: const InputDecoration(
                     labelText: 'Original tempo (bpm)',
                     helperText: 'Enter the tempo from your score',
@@ -341,7 +433,9 @@ class _MainPracticePageState extends State<MainPracticePage> {
                     ? (_hasTempo
                           ? 'Using the original tempo you entered for your piece.'
                           : 'Enter an original tempo between 40 and 240 bpm to match the click to your song.')
-                    : 'Selected piece’s suggested tempo is ${_song.bpm} bpm.',
+                    : _songSelected
+                    ? 'Selected piece’s suggested tempo is ${_song.bpm} bpm.'
+                    : 'Choose a piece to set its suggested tempo.',
                 style: TextStyle(color: AppColors.mutedForeground),
               ),
               const SizedBox(height: 12),
@@ -354,6 +448,7 @@ class _MainPracticePageState extends State<MainPracticePage> {
                         : () {
                             _speedPercent -= 10;
                             _updateTempo();
+                            _saveSettings();
                           },
                     icon: const Icon(LucideIcons.minus),
                   ),
@@ -382,6 +477,7 @@ class _MainPracticePageState extends State<MainPracticePage> {
                         : () {
                             _speedPercent += 10;
                             _updateTempo();
+                            _saveSettings();
                           },
                     icon: const Icon(LucideIcons.plus),
                   ),
@@ -420,6 +516,12 @@ class _MainPracticePageState extends State<MainPracticePage> {
           ),
         ),
       ],
+      const SizedBox(height: 16),
+      FilledButton.icon(
+        onPressed: _savingSession ? null : _logSession,
+        icon: const Icon(LucideIcons.circleCheck),
+        label: Text(_savingSession ? 'Saving…' : 'Save practice session'),
+      ),
     ],
   );
 
@@ -432,9 +534,10 @@ class _MainPracticePageState extends State<MainPracticePage> {
         onTap: () {
           if (title != 'Practice with music') {
             _stopMetronome();
-            _player.pause();
+            unawaited(_player.pause().catchError((Object _) {}));
           }
           setState(() => _focus = title);
+          _saveSettings();
         },
         leading: Icon(icon, color: AppColors.foreground),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),

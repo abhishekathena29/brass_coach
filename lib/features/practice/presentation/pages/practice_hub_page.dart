@@ -11,45 +11,48 @@ class PracticeHubPage extends StatelessWidget {
   const PracticeHubPage({super.key});
 
   @override
-  Widget build(BuildContext context) => ScreenScroll(
-    children: [
-      const ScreenTitle(
-        title: 'Practice',
-        sub: 'Choose a part of your session',
-      ),
-      _PhaseCard(
-        title: 'Warm-up',
-        description: 'Find a short exercise to get ready to play.',
-        icon: LucideIcons.sun,
-        tone: PanelTone.sage,
-        onTap: () => context.go('/practice/warm-up'),
-      ),
-      const SizedBox(height: 12),
-      _PhaseCard(
-        title: 'Main practice',
-        description: 'Work on range, fluency, or a piece of music.',
-        icon: LucideIcons.music2,
-        tone: PanelTone.lilac,
-        onTap: () => context.go('/practice/main'),
-      ),
-      const SizedBox(height: 12),
-      _PhaseCard(
-        title: 'Cool-down',
-        description: 'Finish with relaxed, gentle playing.',
-        icon: LucideIcons.moon,
-        tone: PanelTone.plain,
-        onTap: () => context.go('/practice/cool-down'),
-      ),
-      const SizedBox(height: 12),
-      _PhaseCard(
-        title: 'Tuner & metronome',
-        description: 'Check your pitch or set a steady tempo.',
-        icon: LucideIcons.audioLines,
-        tone: PanelTone.sage,
-        onTap: () => context.go('/practice/tuner'),
-      ),
-    ],
-  );
+  Widget build(BuildContext context) {
+    AppColors.watch(context);
+    return ScreenScroll(
+      children: [
+        const ScreenTitle(
+          title: 'Practice',
+          sub: 'Choose a part of your session',
+        ),
+        _PhaseCard(
+          title: 'Warm-up',
+          description: 'Find a short exercise to get ready to play.',
+          icon: LucideIcons.sun,
+          tone: PanelTone.sage,
+          onTap: () => context.go('/practice/warm-up'),
+        ),
+        const SizedBox(height: 12),
+        _PhaseCard(
+          title: 'Main practice',
+          description: 'Work on range, fluency, or a piece of music.',
+          icon: LucideIcons.music2,
+          tone: PanelTone.lilac,
+          onTap: () => context.go('/practice/main'),
+        ),
+        const SizedBox(height: 12),
+        _PhaseCard(
+          title: 'Cool-down',
+          description: 'Finish with relaxed, gentle playing.',
+          icon: LucideIcons.moon,
+          tone: PanelTone.plain,
+          onTap: () => context.go('/practice/cool-down'),
+        ),
+        const SizedBox(height: 12),
+        _PhaseCard(
+          title: 'Tuner & metronome',
+          description: 'Check your pitch or set a steady tempo.',
+          icon: LucideIcons.audioLines,
+          tone: PanelTone.sage,
+          onTap: () => context.go('/practice/tuner'),
+        ),
+      ],
+    );
+  }
 }
 
 class _PhaseCard extends StatelessWidget {

@@ -15,6 +15,7 @@ class TrackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.watch(context);
     return Panel(
       tone: track.tone,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),

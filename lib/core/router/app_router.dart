@@ -10,7 +10,9 @@ import '../../features/practice/presentation/pages/main_practice_page.dart';
 import '../../features/practice/presentation/pages/warmup_page.dart';
 import '../../features/practice/presentation/pages/cool_down_page.dart';
 import '../../features/practice/presentation/pages/tuner_metronome_page.dart';
+import '../../features/practice/data/practice_store.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/profile/presentation/pages/profile_setup_page.dart';
 import '../../features/progress/presentation/pages/progress_page.dart';
 import '../../features/today/presentation/pages/today_page.dart';
 import '../../shared/widgets/phone_shell.dart';
@@ -18,8 +20,8 @@ import '../../shared/widgets/phone_shell.dart';
 /// Keeps the welcome and sign-in screens outside the tabbed app shell.
 GoRouter createAppRouter(
   AuthService authService, {
-  required bool Function() darkMode,
-  required ValueChanged<bool> onDarkModeChanged,
+  required PracticeStore practiceStore,
+  required Future<void> Function(bool) onDarkModeChanged,
 }) => GoRouter(
   navigatorKey: GlobalKey<NavigatorState>(),
   initialLocation: authService.isSignedIn ? '/' : '/welcome',
@@ -36,24 +38,46 @@ GoRouter createAppRouter(
     GoRoute(path: '/welcome', builder: (context, state) => const WelcomePage()),
     GoRoute(
       path: '/sign-in',
-      builder: (context, state) => SignInPage(signIn: authService.signIn),
+      builder: (context, state) =>
+          SignInPage(signIn: authService.signIn, signUp: authService.signUp),
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) {
-        return PhoneShell(
-          body: navigationShell,
-          email: authService.email,
-          currentIndex: navigationShell.currentIndex,
-          onTabTap: (index) => navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
-          ),
+        return ListenableBuilder(
+          listenable: practiceStore,
+          builder: (context, _) {
+            if (!practiceStore.isLoaded) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            if (!practiceStore.hasCompletedProfile) {
+              return ProfileSetupPage(
+                store: practiceStore,
+                onSignOut: authService.signOut,
+              );
+            }
+            return PhoneShell(
+              body: navigationShell,
+              name: practiceStore.data.displayName,
+              instrument: practiceStore.data.instrument,
+              syncError: practiceStore.error,
+              currentIndex: navigationShell.currentIndex,
+              onTabTap: (index) => navigationShell.goBranch(
+                index,
+                initialLocation: index == navigationShell.currentIndex,
+              ),
+            );
+          },
         );
       },
       branches: [
         StatefulShellBranch(
           routes: [
-            GoRoute(path: '/', builder: (context, state) => const TodayPage()),
+            GoRoute(
+              path: '/',
+              builder: (context, state) => TodayPage(store: practiceStore),
+            ),
           ],
         ),
         StatefulShellBranch(
@@ -64,21 +88,24 @@ GoRouter createAppRouter(
               routes: [
                 GoRoute(
                   path: 'tuner',
-                  builder: (context, state) => const TunerMetronomePage(),
+                  builder: (context, state) =>
+                      TunerMetronomePage(store: practiceStore),
                 ),
                 GoRoute(
                   path: 'warm-up',
-                  builder: (context, state) => const WarmupPage(),
+                  builder: (context, state) => WarmupPage(store: practiceStore),
                 ),
                 GoRoute(
                   path: 'main',
                   builder: (context, state) => MainPracticePage(
                     initialSong: state.uri.queryParameters['song'],
+                    store: practiceStore,
                   ),
                 ),
                 GoRoute(
                   path: 'cool-down',
-                  builder: (context, state) => const CoolDownPage(),
+                  builder: (context, state) =>
+                      CoolDownPage(store: practiceStore),
                 ),
               ],
             ),
@@ -96,7 +123,7 @@ GoRouter createAppRouter(
           routes: [
             GoRoute(
               path: '/progress',
-              builder: (context, state) => const ProgressPage(),
+              builder: (context, state) => ProgressPage(store: practiceStore),
             ),
           ],
         ),
@@ -107,8 +134,8 @@ GoRouter createAppRouter(
               builder: (context, state) => ProfilePage(
                 email: authService.email,
                 onSignOut: authService.signOut,
-                darkMode: darkMode(),
                 onDarkModeChanged: onDarkModeChanged,
+                store: practiceStore,
               ),
             ),
           ],

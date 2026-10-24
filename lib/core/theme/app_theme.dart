@@ -19,7 +19,7 @@ class AppTheme {
         surface: AppColors.background,
         onSurface: AppColors.foreground,
         primary: AppColors.primary,
-        onPrimary: AppColors.primaryForeground,
+        onPrimary: AppColors.actionForeground,
         secondary: AppColors.secondary,
         onSecondary: AppColors.secondaryForeground,
         error: AppColors.destructive,
@@ -35,6 +35,18 @@ class AppTheme {
 
     return base.copyWith(
       textTheme: textTheme,
+      switchTheme: SwitchThemeData(
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? AppColors.primary
+              : AppColors.muted,
+        ),
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? AppColors.actionForeground
+              : AppColors.foreground,
+        ),
+      ),
       splashFactory: InkRipple.splashFactory,
       dividerTheme: DividerThemeData(
         color: AppColors.border,

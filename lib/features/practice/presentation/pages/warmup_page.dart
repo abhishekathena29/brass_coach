@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../data/practice_store.dart';
 import '../../../../shared/widgets/panel.dart';
 import '../../../../shared/widgets/screen_scroll.dart';
 import '../../../../shared/widgets/screen_title.dart';
@@ -25,7 +26,9 @@ const warmupExercises = [
 ];
 
 class WarmupPage extends StatefulWidget {
-  const WarmupPage({super.key});
+  const WarmupPage({super.key, required this.store});
+
+  final PracticeStore store;
 
   @override
   State<WarmupPage> createState() => _WarmupPageState();
@@ -33,10 +36,26 @@ class WarmupPage extends StatefulWidget {
 
 class _WarmupPageState extends State<WarmupPage> {
   String _query = '';
-  WarmupExercise? _selected;
+
+  void _choose(WarmupExercise exercise) {
+    widget.store
+        .save({'selectedWarmup': exercise.name})
+        .catchError((Object _) {});
+  }
 
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.store,
+      builder: (context, _) => _buildContent(context),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    final selectedName = widget.store.data.selectedWarmup;
+    final selected = warmupExercises
+        .where((item) => item.name == selectedName)
+        .firstOrNull;
     final matches = warmupExercises
         .where(
           (exercise) =>
@@ -66,8 +85,8 @@ class _WarmupPageState extends State<WarmupPage> {
         for (final exercise in warmupExercises.take(3)) ...[
           _ExerciseTile(
             exercise: exercise,
-            selected: _selected == exercise,
-            onTap: () => setState(() => _selected = exercise),
+            selected: selected == exercise,
+            onTap: () => _choose(exercise),
           ),
           const SizedBox(height: 8),
         ],
@@ -91,12 +110,12 @@ class _WarmupPageState extends State<WarmupPage> {
           for (final exercise in matches) ...[
             _ExerciseTile(
               exercise: exercise,
-              selected: _selected == exercise,
-              onTap: () => setState(() => _selected = exercise),
+              selected: selected == exercise,
+              onTap: () => _choose(exercise),
             ),
             const SizedBox(height: 8),
           ],
-        if (_selected != null) ...[
+        if (selected != null) ...[
           const SizedBox(height: 12),
           Panel(
             tone: PanelTone.sage,
@@ -109,12 +128,12 @@ class _WarmupPageState extends State<WarmupPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${_selected!.name} · ${_selected!.minutes} min',
+                  '${selected.name} · ${selected.minutes} min',
                   style: TextStyle(color: AppColors.foreground),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _selected!.detail,
+                  selected.detail,
                   style: TextStyle(color: AppColors.mutedForeground),
                 ),
               ],

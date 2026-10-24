@@ -4,37 +4,51 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/domain/auth_service.dart';
+import 'features/practice/data/practice_store.dart';
 
 class BrassCoachApp extends StatefulWidget {
   const BrassCoachApp({
     super.key,
     required this.authService,
-    this.initialDarkMode = false,
-    this.saveDarkMode,
+    this.practiceStore,
   });
 
   final AuthService authService;
-  final bool initialDarkMode;
-  final Future<void> Function(bool)? saveDarkMode;
+  final PracticeStore? practiceStore;
 
   @override
   State<BrassCoachApp> createState() => _BrassCoachAppState();
 }
 
 class _BrassCoachAppState extends State<BrassCoachApp> {
-  late bool _darkMode = widget.initialDarkMode;
+  late final PracticeStore _store =
+      widget.practiceStore ?? MemoryPracticeStore();
+  late bool _darkMode;
   late final _router = createAppRouter(
     widget.authService,
-    darkMode: () => _darkMode,
-    onDarkModeChanged: (value) {
-      setState(() => _darkMode = value);
-      widget.saveDarkMode?.call(value);
-    },
+    practiceStore: _store,
+    onDarkModeChanged: (value) => _store.save({'darkMode': value}),
   );
+
+  @override
+  void initState() {
+    super.initState();
+    _darkMode = _store.data.darkMode;
+    _store.addListener(_onStoreChanged);
+  }
+
+  void _onStoreChanged() {
+    final darkMode = _store.data.darkMode;
+    if (_darkMode != darkMode) {
+      setState(() => _darkMode = darkMode);
+    }
+  }
 
   @override
   void dispose() {
     _router.dispose();
+    _store.removeListener(_onStoreChanged);
+    if (widget.practiceStore == null) _store.dispose();
     super.dispose();
   }
 
@@ -42,9 +56,9 @@ class _BrassCoachAppState extends State<BrassCoachApp> {
   Widget build(BuildContext context) {
     AppColors.isDark = _darkMode;
     return MaterialApp.router(
-      key: ValueKey(_darkMode),
       title: 'BrassCoach AI',
       debugShowCheckedModeBanner: false,
+      themeAnimationDuration: Duration.zero,
       theme: AppTheme.current,
       routerConfig: _router,
     );

@@ -3,20 +3,24 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_radii.dart';
 
-/// Port of the `StatusBar` sub-component inside `src/components/PhoneFrame.tsx`:
-/// a dark, rounded-bottom header with a mock system clock row, the user's
-/// avatar/account/instrument, and a notification button.
+/// Header with the player's chosen name and instrument.
 class PhoneStatusBar extends StatelessWidget {
-  const PhoneStatusBar({super.key, required this.email});
+  const PhoneStatusBar({
+    super.key,
+    required this.name,
+    required this.instrument,
+  });
 
-  final String? email;
+  final String name;
+  final String instrument;
 
   @override
   Widget build(BuildContext context) {
-    final account = email?.isNotEmpty == true ? email! : 'Player';
+    AppColors.watch(context);
+    final account = name;
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 20),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
       decoration: BoxDecoration(
         color: AppColors.ink,
         borderRadius: BorderRadius.vertical(
@@ -25,37 +29,6 @@ class PhoneStatusBar extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '9:41',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primaryForeground,
-                ),
-              ),
-              Container(
-                height: 24,
-                width: 96,
-                decoration: BoxDecoration(
-                  color: AppColors.ink,
-                  borderRadius: BorderRadius.circular(AppRadii.full),
-                ),
-              ),
-              Text(
-                '— ≋ ▮',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: -0.5,
-                  color: AppColors.primaryForeground,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -96,10 +69,12 @@ class PhoneStatusBar extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Trombone · Level 4',
+                            instrument,
                             style: TextStyle(
                               fontSize: 11,
-                              color: Color(0x99FBFAF8),
+                              color: AppColors.primaryForeground.withValues(
+                                alpha: 0.82,
+                              ),
                             ),
                           ),
                         ],
@@ -107,37 +82,6 @@ class PhoneStatusBar extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              SizedBox(width: 12),
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    height: 44,
-                    width: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.card,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '♪',
-                      style: TextStyle(fontSize: 18, color: AppColors.ink),
-                    ),
-                  ),
-                  Positioned(
-                    right: 6,
-                    top: 6,
-                    child: Container(
-                      height: 8,
-                      width: 8,
-                      decoration: BoxDecoration(
-                        color: AppColors.lilacDeep,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),

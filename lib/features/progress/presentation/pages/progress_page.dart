@@ -1,138 +1,74 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_radii.dart';
-import '../../../../shared/widgets/meter_row.dart';
 import '../../../../shared/widgets/panel.dart';
-import '../../../../shared/widgets/pill.dart';
 import '../../../../shared/widgets/screen_scroll.dart';
 import '../../../../shared/widgets/screen_title.dart';
 import '../../../../shared/widgets/stat_tile.dart';
-import '../widgets/trend_bar_chart.dart';
+import '../../../practice/data/practice_store.dart';
 
-const List<String> _highlights = [
-  'Sharp above G4',
-  'Late attacks after rests',
-  'Airy tone at pp',
-  'Strong slurs',
-];
+class ProgressPage extends StatelessWidget {
+  const ProgressPage({super.key, required this.store});
 
-/// Port of `Progress` in `src/routes/progress.tsx`.
-class ProgressPage extends StatefulWidget {
-  const ProgressPage({super.key});
+  final PracticeStore store;
 
   @override
-  State<ProgressPage> createState() => _ProgressPageState();
-}
-
-class _ProgressPageState extends State<ProgressPage> {
-  int _selectedTab = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return ScreenScroll(
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: store,
+    builder: (context, _) => ScreenScroll(
       children: [
-        ScreenTitle(title: 'Progress', sub: 'Last 30 days'),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16),
+        const ScreenTitle(title: 'Progress', sub: 'Your saved practice'),
+        Panel(
+          tone: PanelTone.sage,
           child: Row(
             children: [
-              Pill(label: 'Trends', active: _selectedTab == 0, onTap: () => setState(() => _selectedTab = 0)),
-              SizedBox(width: 8),
-              Pill(label: 'Sessions', active: _selectedTab == 1, onTap: () => setState(() => _selectedTab = 1)),
+              StatTile(label: 'Sessions', value: '${store.sessions.length}'),
+              const SizedBox(width: 8),
+              StatTile(
+                label: 'This week',
+                value:
+                    '${store.sessions.where((session) => session.at.isAfter(DateTime.now().subtract(const Duration(days: 7)))).length}',
+              ),
             ],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Panel(
-            tone: PanelTone.sage,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    StatTile(label: 'Sessions logged', value: '24'),
-                    SizedBox(width: 8),
-                    StatTile(label: 'Practice hours', value: '11'),
-                    SizedBox(width: 8),
-                    StatTile(label: 'Pieces mastered', value: '3'),
-                  ],
-                ),
-                SizedBox(height: 12),
-                MeterRow(label: 'Overall accuracy', value: 84, tone: MeterTone.sage),
-                SizedBox(height: 8),
-                MeterRow(label: 'Upper-register pitch', value: 65, tone: MeterTone.sage, striped: true),
-                SizedBox(height: 8),
-                MeterRow(label: 'Tone consistency', value: 48, tone: MeterTone.sage),
-              ],
+        const SizedBox(height: 16),
+        Text('Recent sessions', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 10),
+        if (store.sessions.isEmpty)
+          Panel(
+            tone: PanelTone.plain,
+            bordered: true,
+            child: const Text(
+              'No sessions saved yet. Complete a practice session to start your history.',
             ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Panel(
-            tone: PanelTone.lilac,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Pitch accuracy trend',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.foreground),
-                ),
-                SizedBox(height: 16),
-                TrendBarChart(),
-                SizedBox(height: 12),
-                RichText(
-                  text: TextSpan(
-                    style: TextStyle(fontSize: 14, color: AppColors.mutedForeground),
-                    children: [
-                      TextSpan(text: 'Upper-register pitch accuracy is up '),
-                      TextSpan(
-                        text: '12%',
-                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.foreground),
-                      ),
-                      TextSpan(text: ' this month.'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Panel(
-          tone: PanelTone.plain,
-          bordered: true,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Coach highlights',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: AppColors.foreground),
-              ),
-              SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+          )
+        else
+          for (final session in store.sessions) ...[
+            Panel(
+              tone: PanelTone.plain,
+              bordered: true,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final tag in _highlights)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.muted,
-                        borderRadius: BorderRadius.circular(AppRadii.full),
-                      ),
-                      child: Text(
-                        tag,
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: AppColors.foreground),
-                      ),
+                  Text(
+                    session.piece,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.foreground,
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${session.focus} · ${session.at.day}/${session.at.month}/${session.at.year}',
+                    style: TextStyle(color: AppColors.mutedForeground),
+                  ),
                 ],
               ),
-            ],
-          ),
-        ),
+            ),
+            const SizedBox(height: 10),
+          ],
       ],
-    );
-  }
+    ),
+  );
 }

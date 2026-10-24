@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
@@ -6,9 +7,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({super.key, required this.signIn});
+  const SignInPage({super.key, required this.signIn, required this.signUp});
 
   final Future<void> Function(String email, String password) signIn;
+  final Future<void> Function(String email, String password) signUp;
 
   @override
   State<SignInPage> createState() => _SignInPageState();
@@ -19,6 +21,7 @@ class _SignInPageState extends State<SignInPage> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _submitting = false;
+  bool _createAccount = false;
   String? _error;
 
   @override
@@ -29,22 +32,54 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Future<void> _submit() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      setState(() => _error = 'Enter a valid email address.');
+      return;
+    }
+    if (password.length < 6) {
+      setState(() => _error = 'Password must have at least 6 characters.');
+      return;
+    }
     setState(() {
       _submitting = true;
       _error = null;
     });
 
     try {
-      await widget.signIn(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      if (_createAccount) {
+        await widget.signUp(email, password);
+      } else {
+        await widget.signIn(email, password);
+      }
       if (mounted) context.go('/');
     } catch (error) {
-      if (mounted) setState(() => _error = error.toString());
+      if (mounted) setState(() => _error = _friendlyError(error));
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  String _friendlyError(Object error) {
+    if (error is FirebaseAuthException) {
+      switch (error.code) {
+        case 'email-already-in-use':
+          return 'This email already has an account. Sign in instead.';
+        case 'invalid-credential':
+        case 'wrong-password':
+        case 'user-not-found':
+          return 'Email or password is incorrect.';
+        case 'weak-password':
+          return 'Choose a stronger password.';
+        case 'network-request-failed':
+          return 'Check your internet connection and try again.';
+        case 'operation-not-allowed':
+          return 'Email sign-in has not been enabled for this Firebase project.';
+      }
+      return error.message ?? 'Authentication failed. Try again.';
+    }
+    return 'Something went wrong. Try again.';
   }
 
   @override
@@ -86,7 +121,7 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                   SizedBox(height: 28),
                   Text(
-                    'Start practicing',
+                    _createAccount ? 'Create your account' : 'Welcome back',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                       fontWeight: FontWeight.w700,
                       letterSpacing: -0.8,
@@ -94,17 +129,16 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Enter anything to explore the app. No account is needed yet.',
+                    _createAccount
+                        ? 'Save your practice across your devices.'
+                        : 'Sign in to continue your practice.',
                     style: TextStyle(
                       fontSize: 16,
                       color: AppColors.mutedForeground,
                     ),
                   ),
                   SizedBox(height: 36),
-                  Text(
-                    'Name or email',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
+                  Text('Email', style: TextStyle(fontWeight: FontWeight.w600)),
                   SizedBox(height: 8),
                   TextFormField(
                     controller: _emailController,
@@ -112,7 +146,7 @@ class _SignInPageState extends State<SignInPage> {
                     textInputAction: TextInputAction.next,
                     autocorrect: false,
                     decoration: InputDecoration(
-                      hintText: 'Your name or email',
+                      hintText: 'you@example.com',
                       filled: true,
                       fillColor: AppColors.card,
                       border: inputBorder,
@@ -121,7 +155,7 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                   SizedBox(height: 20),
                   Text(
-                    'Password (optional)',
+                    'Password',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   SizedBox(height: 8),
@@ -182,12 +216,26 @@ class _SignInPageState extends State<SignInPage> {
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : Text(
-                              'Continue',
+                              _createAccount ? 'Create account' : 'Sign in',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: _submitting
+                        ? null
+                        : () => setState(() {
+                            _createAccount = !_createAccount;
+                            _error = null;
+                          }),
+                    child: Text(
+                      _createAccount
+                          ? 'Already have an account? Sign in'
+                          : 'New here? Create an account',
                     ),
                   ),
                 ],

@@ -6,6 +6,11 @@ class AppColors {
 
   static bool isDark = false;
 
+  /// Registers a theme dependency for widgets that use these shared colors.
+  static void watch(BuildContext context) {
+    Theme.of(context);
+  }
+
   static Color get background =>
       isDark ? const Color(0xFF302C2B) : const Color(0xFFDECEBE);
   static Color get foreground =>
@@ -13,9 +18,10 @@ class AppColors {
   static Color get card =>
       isDark ? const Color(0xFF403A37) : const Color(0xFFE8DDD2);
   static Color get cardForeground => foreground;
-  static Color get primary => ink;
-  static Color get primaryForeground =>
+  static Color get primary => isDark ? const Color(0xFFC78D97) : ink;
+  static Color get actionForeground =>
       isDark ? const Color(0xFF302C2B) : const Color(0xFFDECEBE);
+  static Color get primaryForeground => const Color(0xFFDECEBE);
   static Color get secondary =>
       isDark ? const Color(0xFF9B616D) : const Color(0xFFC8A9AA);
   static Color get secondaryForeground =>
@@ -50,8 +56,7 @@ class AppColors {
       isDark ? const Color(0xFFC8A9AA) : const Color(0xFFC8A9AA);
   static Color get clay =>
       isDark ? const Color(0xFFBA857A) : const Color(0xFF9B616D);
-  static Color get ink =>
-      isDark ? const Color(0xFF9B616D) : const Color(0xFF4E1424);
+  static Color get ink => const Color(0xFF4E1424);
   static Color get surface =>
       isDark ? const Color(0xFF302C2B) : const Color(0xFFF0E8DF);
 }

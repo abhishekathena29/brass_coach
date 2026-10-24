@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/library_tracks.dart';
 import '../../../../shared/widgets/screen_scroll.dart';
 import '../../../../shared/widgets/screen_title.dart';
@@ -12,6 +13,7 @@ class LibraryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.watch(context);
     return ScreenScroll(
       children: [
         const ScreenTitle(

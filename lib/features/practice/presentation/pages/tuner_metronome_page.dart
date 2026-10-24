@@ -9,25 +9,38 @@ import 'package:just_audio/just_audio.dart';
 import 'package:khuur_pitch/khuur_pitch.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/screen_scroll.dart';
+import '../../data/practice_store.dart';
 
 enum _ToolMode { tuner, metronome }
+
+const _inTuneCents = 8;
 
 class _TunerPalette {
   const _TunerPalette._();
 
-  static const ivory = Color(0xFFDECEBE);
-  static const burgundy = Color(0xFF4E1424);
-  static const rose = Color(0xFF9B616D);
-  static const sage = Color(0xFF5F6B5E);
-  static const mocha = Color(0xFF302C2B);
-  static const softRose = Color(0xFFC8A9AA);
-  static const softSage = Color(0xFFB8C0B2);
-  static const paleIvory = Color(0xFFE8DDD2);
+  static Color get ivory =>
+      AppColors.isDark ? const Color(0xFF302C2B) : const Color(0xFFDECEBE);
+  static Color get burgundy =>
+      AppColors.isDark ? const Color(0xFFC78D97) : const Color(0xFF4E1424);
+  static Color get rose => const Color(0xFF9B616D);
+  static Color get sage =>
+      AppColors.isDark ? const Color(0xFF8A9A86) : const Color(0xFF5F6B5E);
+  static Color get mocha =>
+      AppColors.isDark ? const Color(0xFFDECEBE) : const Color(0xFF302C2B);
+  static Color get softRose =>
+      AppColors.isDark ? const Color(0xFF76505A) : const Color(0xFFC8A9AA);
+  static Color get softSage =>
+      AppColors.isDark ? const Color(0xFF394139) : const Color(0xFFB8C0B2);
+  static Color get paleIvory =>
+      AppColors.isDark ? const Color(0xFF403A37) : const Color(0xFFE8DDD2);
 }
 
 class TunerMetronomePage extends StatefulWidget {
-  const TunerMetronomePage({super.key});
+  const TunerMetronomePage({super.key, required this.store});
+
+  final PracticeStore store;
 
   @override
   State<TunerMetronomePage> createState() => _TunerMetronomePageState();
@@ -36,16 +49,16 @@ class TunerMetronomePage extends StatefulWidget {
 class _TunerMetronomePageState extends State<TunerMetronomePage> {
   static const _noteNames = [
     'C',
-    'C#',
+    'C♯',
     'D',
-    'D#',
+    'D♯',
     'E',
     'F',
-    'F#',
+    'F♯',
     'G',
-    'G#',
+    'G♯',
     'A',
-    'A#',
+    'A♯',
     'B',
   ];
 
@@ -53,20 +66,36 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
     tracker: PitchTracker(minHz: 50, maxHz: 1600),
   );
   final _clickPlayer = AudioPlayer();
-  final _bpmController = TextEditingController(text: '100');
+  final _bpmController = TextEditingController();
   final List<double> _recentPitches = [];
   late final Future<void> _clickReady = _prepareClick();
 
   StreamSubscription<PitchFrame>? _pitchSubscription;
   Timer? _metronomeTimer;
+  Timer? _saveDebounce;
   _ToolMode _mode = _ToolMode.tuner;
   double? _pitchHz;
+  DateTime? _lastValidPitchAt;
   int _bpm = 100;
   int _beat = 0;
   bool _listening = false;
   bool _permissionPermanentlyDenied = false;
   bool _loadingMicrophone = false;
   String? _tunerError;
+
+  @override
+  void initState() {
+    super.initState();
+    _bpm = widget.store.data.metronomeBpm.clamp(40, 240);
+    _bpmController.text = '$_bpm';
+  }
+
+  void _saveBpm() {
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 400), () {
+      widget.store.save({'metronomeBpm': _bpm}).catchError((Object _) {});
+    });
+  }
 
   int? get _midiNote {
     final hz = _pitchHz;
@@ -91,6 +120,11 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
   @override
   void dispose() {
     _metronomeTimer?.cancel();
+    final hasUnsavedBpm = _saveDebounce?.isActive ?? false;
+    _saveDebounce?.cancel();
+    if (hasUnsavedBpm) {
+      widget.store.save({'metronomeBpm': _bpm}).catchError((Object _) {});
+    }
     _pitchSubscription?.cancel();
     _bpmController.dispose();
     _clickPlayer.dispose();
@@ -109,7 +143,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
     await _clickReady;
     try {
       await _clickPlayer.seek(Duration.zero);
-      unawaited(_clickPlayer.play());
+      unawaited(_clickPlayer.play().catchError((Object _) {}));
     } catch (_) {
       // Keep the visual beat running if audio output is unavailable.
     }
@@ -166,8 +200,16 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
   void _onPitchFrame(PitchFrame frame) {
     final hz = frame.hz;
     if (hz == null || frame.clarity < 0.87 || frame.rmsDb < -55) {
+      final last = _lastValidPitchAt;
+      if (_pitchHz != null &&
+          last != null &&
+          DateTime.now().difference(last) > const Duration(milliseconds: 700)) {
+        _recentPitches.clear();
+        if (mounted) setState(() => _pitchHz = null);
+      }
       return;
     }
+    _lastValidPitchAt = DateTime.now();
     _recentPitches.add(hz);
     if (_recentPitches.length > 5) _recentPitches.removeAt(0);
     final sorted = [..._recentPitches]..sort();
@@ -178,10 +220,14 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
 
   void _onPitchError(Object error) {
     if (!mounted) return;
+    unawaited(_pitchSubscription?.cancel());
     setState(() {
       _listening = false;
       _loadingMicrophone = false;
       _pitchSubscription = null;
+      _pitchHz = null;
+      _lastValidPitchAt = null;
+      _recentPitches.clear();
       _tunerError = error is PlatformException && error.code == 'noInput'
           ? 'No microphone input was found.'
           : 'Microphone input stopped. Check your permission and try again.';
@@ -192,6 +238,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
     await _pitchSubscription?.cancel();
     _pitchSubscription = null;
     _recentPitches.clear();
+    _lastValidPitchAt = null;
     if (!mounted) return;
     setState(() {
       _listening = false;
@@ -210,6 +257,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
     final bpm = value.clamp(40, 240);
     _bpmController.text = '$bpm';
     setState(() => _bpm = bpm);
+    _saveBpm();
     if (_metronomeTimer != null) _startMetronome();
   }
 
@@ -221,6 +269,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
       return;
     }
     setState(() => _bpm = bpm);
+    _saveBpm();
     if (_metronomeTimer != null) _startMetronome();
   }
 
@@ -247,6 +296,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.watch(context);
     return Scaffold(
       backgroundColor: _TunerPalette.ivory,
       body: SafeArea(
@@ -257,7 +307,10 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
             const SizedBox(height: 2),
             _modeSelector(),
             const SizedBox(height: 20),
-            if (_mode == _ToolMode.tuner) _tunerContent() else _metronomeContent(),
+            if (_mode == _ToolMode.tuner)
+              _tunerContent()
+            else
+              _metronomeContent(),
           ],
         ),
       ),
@@ -277,7 +330,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
         label: const Text('Practice'),
       ),
       const SizedBox(height: 8),
-      const Text(
+      Text(
         'Tuner & metronome',
         style: TextStyle(
           color: _TunerPalette.mocha,
@@ -287,7 +340,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
         ),
       ),
       const SizedBox(height: 5),
-      const Text(
+      Text(
         'A clear pitch and a steady pulse.',
         style: TextStyle(color: _TunerPalette.mocha, fontSize: 14),
       ),
@@ -354,7 +407,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
   Widget _tunerContent() {
     final note = _noteLabel;
     final cents = _centsOff;
-    final inTune = cents != null && cents.abs() <= 4;
+    final inTune = cents != null && cents.abs() <= _inTuneCents;
     final status = cents == null
         ? (_listening ? 'Play a note' : 'Ready when you are')
         : inTune
@@ -371,14 +424,26 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
           decoration: BoxDecoration(
             color: _TunerPalette.paleIvory,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: _TunerPalette.rose.withValues(alpha: 0.3)),
+            border: Border.all(
+              color: _TunerPalette.rose.withValues(alpha: 0.3),
+            ),
           ),
           child: Column(
             children: [
               Text(
+                'PLAYED NOTE',
+                style: TextStyle(
+                  color: _TunerPalette.mocha,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
                 note ?? '—',
-                style: const TextStyle(
-                  color: _TunerPalette.burgundy,
+                style: TextStyle(
+                  color: inTune ? _TunerPalette.sage : _TunerPalette.burgundy,
                   fontSize: 72,
                   height: 1,
                   fontWeight: FontWeight.w700,
@@ -389,7 +454,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
                 status,
                 style: TextStyle(
                   color: cents == null
-                      ? _TunerPalette.sage
+                      ? _TunerPalette.mocha
                       : inTune
                       ? _TunerPalette.sage
                       : _TunerPalette.rose,
@@ -397,47 +462,33 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(height: 6),
-              Text(
-                _pitchHz == null ? '— Hz' : '${_pitchHz!.toStringAsFixed(1)} Hz',
-                style: const TextStyle(
-                  color: _TunerPalette.mocha,
-                  fontSize: 13,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                ),
-              ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
               SizedBox(
-                height: 54,
-                child: CustomPaint(
-                  painter: _TuningMeterPainter(
-                    cents: cents?.toDouble(),
-                    markerColor: inTune
-                        ? _TunerPalette.sage
-                        : _TunerPalette.burgundy,
+                height: 64,
+                child: Semantics(
+                  label: note == null ? 'No note detected' : '$note, $status',
+                  child: CustomPaint(
+                    painter: _TuningMeterPainter(
+                      cents: cents?.toDouble(),
+                      markerColor: _TunerPalette.burgundy,
+                    ),
+                    child: const SizedBox.expand(),
                   ),
-                  child: const SizedBox.expand(),
                 ),
               ),
-              const Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('−50', style: _meterLabelStyle),
-                  Text('0', style: _meterLabelStyle),
-                  Text('+50', style: _meterLabelStyle),
+                  Text('FLAT', style: _tuningLabelStyle),
+                  Text(
+                    'IN TUNE',
+                    style: _tuningLabelStyle.copyWith(
+                      color: _TunerPalette.sage,
+                    ),
+                  ),
+                  Text('SHARP', style: _tuningLabelStyle),
                 ],
               ),
-              if (cents != null) ...[
-                const SizedBox(height: 9),
-                Text(
-                  '${cents > 0 ? '+' : ''}$cents cents',
-                  style: const TextStyle(
-                    color: _TunerPalette.mocha,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
             ],
           ),
         ),
@@ -453,7 +504,9 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
             style: FilledButton.styleFrom(
               backgroundColor: _TunerPalette.burgundy,
               foregroundColor: _TunerPalette.ivory,
-              disabledBackgroundColor: _TunerPalette.rose.withValues(alpha: 0.5),
+              disabledBackgroundColor: _TunerPalette.rose.withValues(
+                alpha: 0.5,
+              ),
               disabledForegroundColor: _TunerPalette.mocha,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -482,7 +535,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
             onPressed: _pitchSource.openAppSettings,
             style: OutlinedButton.styleFrom(
               foregroundColor: _TunerPalette.burgundy,
-              side: const BorderSide(color: _TunerPalette.rose),
+              side: BorderSide(color: _TunerPalette.rose),
             ),
             icon: const Icon(LucideIcons.settings2, size: 17),
             label: const Text('Open Settings'),
@@ -493,7 +546,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
           Text(
             _tunerError!,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: _TunerPalette.burgundy, fontSize: 13),
+            style: TextStyle(color: _TunerPalette.burgundy, fontSize: 13),
           ),
         ],
       ],
@@ -512,7 +565,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
         ),
         child: Column(
           children: [
-            const Text(
+            Text(
               'TEMPO',
               style: TextStyle(
                 color: _TunerPalette.sage,
@@ -534,7 +587,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: _TunerPalette.burgundy,
                       fontSize: 58,
                       height: 1,
@@ -548,7 +601,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
                     ),
                   ),
                 ),
-                const Text(
+                Text(
                   'BPM',
                   style: TextStyle(
                     color: _TunerPalette.mocha,
@@ -588,7 +641,9 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
                       activeTrackColor: _TunerPalette.sage,
                       inactiveTrackColor: _TunerPalette.softSage,
                       thumbColor: _TunerPalette.burgundy,
-                      overlayColor: _TunerPalette.burgundy.withValues(alpha: 0.12),
+                      overlayColor: _TunerPalette.burgundy.withValues(
+                        alpha: 0.12,
+                      ),
                       trackHeight: 4,
                     ),
                     child: Slider(
@@ -604,7 +659,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
                 _tempoNudgeButton(1, LucideIcons.plus, 'Increase tempo'),
               ],
             ),
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text('40', style: _meterLabelStyle),
@@ -648,9 +703,7 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
     final nextBpm = _bpm + delta;
     return IconButton.filledTonal(
       tooltip: tooltip,
-      onPressed: nextBpm < 40 || nextBpm > 240
-          ? null
-          : () => _setBpm(nextBpm),
+      onPressed: nextBpm < 40 || nextBpm > 240 ? null : () => _setBpm(nextBpm),
       style: IconButton.styleFrom(
         backgroundColor: _TunerPalette.softRose,
         foregroundColor: _TunerPalette.mocha,
@@ -662,10 +715,17 @@ class _TunerMetronomePageState extends State<TunerMetronomePage> {
   }
 }
 
-const _meterLabelStyle = TextStyle(
+TextStyle get _meterLabelStyle => TextStyle(
   color: _TunerPalette.mocha,
   fontSize: 11,
   fontFeatures: [FontFeature.tabularFigures()],
+);
+
+TextStyle get _tuningLabelStyle => TextStyle(
+  color: _TunerPalette.mocha,
+  fontSize: 11,
+  fontWeight: FontWeight.w700,
+  letterSpacing: 0.6,
 );
 
 class _TuningMeterPainter extends CustomPainter {
@@ -676,24 +736,29 @@ class _TuningMeterPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final baseline = size.height - 7;
-    final linePaint = Paint()
-      ..color = _TunerPalette.rose.withValues(alpha: 0.55)
-      ..strokeWidth = 1.2;
-    final centerPaint = Paint()
-      ..color = _TunerPalette.sage
-      ..strokeWidth = 2;
-    canvas.drawLine(Offset(0, baseline), Offset(size.width, baseline), linePaint);
-    for (var index = 0; index <= 20; index++) {
-      final x = size.width * index / 20;
-      final isCenter = index == 10;
-      final isMajor = index % 5 == 0;
-      canvas.drawLine(
-        Offset(x, baseline - (isMajor ? 18 : 10)),
-        Offset(x, baseline + 1),
-        isCenter ? centerPaint : linePaint,
-      );
-    }
+    final track = RRect.fromLTRBR(
+      0,
+      25,
+      size.width,
+      45,
+      const Radius.circular(10),
+    );
+    canvas.drawRRect(track, Paint()..color = _TunerPalette.softRose);
+    final greenHalfWidth = size.width * _inTuneCents / 100;
+    final green = Rect.fromLTRB(
+      size.width / 2 - greenHalfWidth,
+      25,
+      size.width / 2 + greenHalfWidth,
+      45,
+    );
+    canvas.drawRect(green, Paint()..color = _TunerPalette.sage);
+    canvas.drawLine(
+      Offset(size.width / 2, 29),
+      Offset(size.width / 2, 41),
+      Paint()
+        ..color = _TunerPalette.ivory
+        ..strokeWidth = 2,
+    );
     if (cents == null) return;
     final clamped = cents!.clamp(-50, 50);
     final x = size.width * (clamped + 50) / 100;
@@ -701,8 +766,8 @@ class _TuningMeterPainter extends CustomPainter {
       ..color = markerColor
       ..strokeWidth = 3
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(x, 0), Offset(x, baseline - 5), markerPaint);
-    canvas.drawCircle(Offset(x, 4), 4, Paint()..color = markerColor);
+    canvas.drawLine(Offset(x, 8), Offset(x, 55), markerPaint);
+    canvas.drawCircle(Offset(x, 7), 5, Paint()..color = markerColor);
   }
 
   @override

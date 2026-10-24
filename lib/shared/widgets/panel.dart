@@ -23,13 +23,14 @@ class Panel extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
 
   Color get _fill => switch (tone) {
-        PanelTone.lilac => AppColors.lilacSoft,
-        PanelTone.sage => AppColors.sageSoft,
-        PanelTone.plain => AppColors.card,
-      };
+    PanelTone.lilac => AppColors.lilacSoft,
+    PanelTone.sage => AppColors.sageSoft,
+    PanelTone.plain => AppColors.card,
+  };
 
   @override
   Widget build(BuildContext context) {
+    AppColors.watch(context);
     return Container(
       margin: margin,
       padding: padding,

@@ -22,13 +22,18 @@ const List<NavItem> kNavItems = [
 /// pill-shaped dock, pinned near the bottom of the phone frame, whose
 /// active tab morphs from translucent icon to a solid card-colored circle.
 class AppBottomNav extends StatelessWidget {
-  const AppBottomNav({super.key, required this.currentIndex, required this.onTap});
+  const AppBottomNav({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   final int currentIndex;
   final ValueChanged<int> onTap;
 
   @override
   Widget build(BuildContext context) {
+    AppColors.watch(context);
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
@@ -43,11 +48,12 @@ class AppBottomNav extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              for (var i = 0; i < kNavItems.length; i++) _NavButton(
-                item: kNavItems[i],
-                active: i == currentIndex,
-                onTap: () => onTap(i),
-              ),
+              for (var i = 0; i < kNavItems.length; i++)
+                _NavButton(
+                  item: kNavItems[i],
+                  active: i == currentIndex,
+                  onTap: () => onTap(i),
+                ),
             ],
           ),
         ),
@@ -57,7 +63,11 @@ class AppBottomNav extends StatelessWidget {
 }
 
 class _NavButton extends StatelessWidget {
-  const _NavButton({required this.item, required this.active, required this.onTap});
+  const _NavButton({
+    required this.item,
+    required this.active,
+    required this.onTap,
+  });
 
   final NavItem item;
   final bool active;
@@ -87,8 +97,8 @@ class _NavButton extends StatelessWidget {
               item.icon,
               size: 20,
               color: active
-                  ? AppColors.ink
-                  : AppColors.primaryForeground.withValues(alpha: 0.7),
+                  ? AppColors.foreground
+                  : AppColors.primaryForeground.withValues(alpha: 0.8),
             ),
           ),
         ),

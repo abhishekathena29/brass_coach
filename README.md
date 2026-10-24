@@ -11,10 +11,28 @@ flutter pub get
 flutter run
 ```
 
-The welcome screen leads to a temporary local sign-in. Enter any name or email
-and any password, or leave both blank, to explore the app. The sign-in state is
-kept only while the app is running; it resets on restart. Profile has a button
-to return to the welcome screen.
+The welcome screen leads to Firebase email and password sign-in. New users can
+create an account from the same screen. The app uses the Firebase project already
+configured in `lib/firebase_options.dart`.
+
+After signing in, players enter their name, instrument, experience level, and
+practice goal before using the app. They can edit all four later in Profile.
+Accounts missing any of these details are prompted to complete setup. No
+instrument or piece is chosen for a new player.
+
+Before running against Firebase, enable **Email/Password** in Firebase Console →
+Authentication → Sign-in method, create a **Cloud Firestore** database, and deploy
+the included per-user rules:
+
+```sh
+npm_config_cache=/private/tmp/brass_coach_npm_cache npx --yes firebase-tools login
+npm_config_cache=/private/tmp/brass_coach_npm_cache npx --yes firebase-tools deploy --only firestore:rules --project brass-coach
+```
+
+Practice choices, personal details, dark mode, standalone metronome BPM, and saved practice
+sessions live under `users/{uid}` in Firestore. Today, Progress, and Profile read
+the saved account data. Firestore rules only allow the signed-in account to read
+and write its own document and session history.
 
 ## Practice flow
 
@@ -26,4 +44,5 @@ tempo. The speed buttons adjust the click from 50% to 150% of the original BPM.
 You can import an audio recording to play it at the same chosen speed. Enter its
 original BPM from the score to match the click; BPM detection from audio is not
 implemented. Library cards contain piece names and tempo metadata, but no audio
-files. Profile has an app-wide dark mode setting that is saved on the device.
+files. Imported audio files remain on the device; Firestore stores their title
+and tempo settings, not the audio bytes.

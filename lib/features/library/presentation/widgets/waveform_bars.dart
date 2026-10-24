@@ -15,6 +15,7 @@ class WaveformBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppColors.watch(context);
     return SizedBox(
       height: height,
       child: Row(
